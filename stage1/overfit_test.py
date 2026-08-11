@@ -8,7 +8,7 @@ import os
 device = torch.device("cuda")
 ds = LungDetectionDataset(os.path.join(ROOT, "stage1_detection_manifest.csv"), "train")
 
-# hand-pick 4 samples that include positives, so box loss is exercised
+
 pos_idx = list(ds.df.index[ds.df.role == "positive"][:2])
 neg_idx = list(ds.df.index[ds.df.role == "negative"][:2])
 batch_idx = pos_idx + neg_idx
