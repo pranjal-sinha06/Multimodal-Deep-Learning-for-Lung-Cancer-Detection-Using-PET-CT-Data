@@ -1,0 +1,19 @@
+[
+  {
+    "epoch": 0,
+    "lr": 0.0002974999999999998,
+    "loss": 0.39323076397180556,
+    "loss_classifier": 0.3053110198210925,
+    "loss_box_reg": 0.03625861685723066,
+    "loss_objectness": 0.04844502745196223,
+    "loss_rpn_box_reg": 0.0032161005894886328,
+    "val_map": 0.0,
+    "val_map_50": 0.0,
+    "val_precision": 0.0,
+    "val_recall": 0.0,
+    "val_tp": 0,
+    "val_fp": 0,
+    "val_fn": 33,
+    "epoch_time_s": 103.3
+  }
+]

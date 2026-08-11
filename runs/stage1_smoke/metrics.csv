@@ -1,0 +1,2 @@
+epoch,lr,loss,loss_classifier,loss_box_reg,loss_objectness,loss_rpn_box_reg,val_map,val_map_50,val_precision,val_recall,val_tp,val_fp,val_fn,epoch_time_s
+0,0.0002974999999999998,0.39323076397180556,0.3053110198210925,0.03625861685723066,0.04844502745196223,0.0032161005894886328,0.0,0.0,0.0,0.0,0,0,33,103.3
