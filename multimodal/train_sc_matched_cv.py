@@ -1,20 +1,6 @@
 """
-train_sc_matched_cv.py  --  SC arm with CT-matched annotation density, 5-fold patient-level CV.
+train_sc_matched_cv.py -SC arm with CT-matched annotation density, 5-fold patient-level CV.
 
-The CT half of the CT-vs-CT+PET experiment. Reproducible (seeded RNG +
-deterministic cudnn, the Stage 2 recipe). Pools out-of-fold predictions so
-every patient is evaluated once, then reports AUC + all the Stage 2 figures,
-with FULL class names on the confusion matrix.
-
-    python train_ct_cv.py --seed 0
-    python train_ct_cv.py --seed 0 --folds 5 --epochs 40
-
-Outputs (per seed) under figures/petct/sc_matched_s<seed>/:
-    fold_predictions.csv      out-of-fold prob + true label, every patient's crops
-    metrics.json             pooled AUC, accuracy, macro-F1, per-class P/R/F1
-    cm_crop.png  cm_patient.png
-    precision_crop.png recall_crop.png f1_crop.png  (+ _patient)
-    pr_curve_crop.png
 """
 import os, json, argparse, random
 import numpy as np, pandas as pd, torch
@@ -30,7 +16,7 @@ from torchvision import models
 
 from sc_cv_dataset import SCCohortDataset, CLASS_NAMES, SUBTYPE_TO_LABEL
 
-# density-matched control: same representation, CT-equivalent box count
+
 MATCHED_MAN = "/sharedscratch/ps306/lung/sc_crops_manifest_matched.csv"
 from stage2_dataset import MANIFEST
 
@@ -64,7 +50,7 @@ def train_one_fold(tr_pat, va_pat, seed, epochs, patience, fixed_epochs=False):
     predictions are free of selection bias."""
     set_seed(seed)
 
-    # inner split: hold out ~15% of TRAINING patients, stratified by subtype
+   
     coh = pd.read_csv("pet_cohort_83.csv").set_index("patient").subtype
     tr_pat = list(tr_pat)
     strat = np.array([SUBTYPE_TO_LABEL[coh[p]] for p in tr_pat])
@@ -75,7 +61,7 @@ def train_one_fold(tr_pat, va_pat, seed, epochs, patience, fixed_epochs=False):
 
     tr = SCCohortDataset(inner_tr, is_train=True,  manifest=MATCHED_MAN)
     iva = SCCohortDataset(inner_va, is_train=False, manifest=MATCHED_MAN)
-    va = SCCohortDataset(va_pat,  is_train=False, manifest=MATCHED_MAN)          # outer fold, untouched
+    va = SCCohortDataset(va_pat,  is_train=False, manifest=MATCHED_MAN)          
 
     cc = tr.class_counts; n = sum(cc.values())
     w = torch.tensor([n / (2 * cc.get(c, 1)) for c in (0, 1)], dtype=torch.float32, device=DEVICE)
@@ -88,9 +74,7 @@ def train_one_fold(tr_pat, va_pat, seed, epochs, patience, fixed_epochs=False):
     lossf = nn.CrossEntropyLoss(weight=w)
     scaler = torch.cuda.amp.GradScaler()
 
-    # fixed_epochs mode: train a set number of epochs and keep the final model.
-    # No selection at all, so no selection bias of any kind. Used as a check
-    # that the nested-selection result is not an artefact of a noisy inner set.
+   
     best_f1, best_state, wait = -1, None, 0
     for ep in range(epochs):
         model.train()
@@ -103,7 +87,7 @@ def train_one_fold(tr_pat, va_pat, seed, epochs, patience, fixed_epochs=False):
         if fixed_epochs:
             best_state = {k: v.cpu().clone() for k, v in model.state_dict().items()}
             continue
-        # selection on the INNER validation set, never the outer fold
+      
         ys, ps = _infer(model, dl_iva)
         vf1 = f1_score(ys, ps.argmax(1), average="macro", zero_division=0)
         if vf1 > best_f1:
@@ -167,13 +151,13 @@ def main():
     _report(df, OUT)
 
 
-# ---------- reporting: pooled crop-level and patient-level, full class names ----------
+
 def _report(df, OUT):
     prob = df[["p0", "p1"]].values
     yc   = df.y.values
     pc   = prob.argmax(1)
 
-    # patient level: mean prob over a patient's crops
+  
     g = df.groupby("patient").agg(y=("y", "first"), p0=("p0", "mean"), p1=("p1", "mean"))
     yp = g.y.values
     pp = g[["p0", "p1"]].values.argmax(1)
@@ -238,7 +222,7 @@ def _bars(vals, mname, title, path):
 
 def _pr_curve(y, score, path):
     fig, ax = plt.subplots(figsize=(5.6, 4.6))
-    for cls, col in [(1, "#C44E52")]:                    # G as positive (of interest)
+    for cls, col in [(1, "#C44E52")]:                 
         yy = (y == cls).astype(int)
         prec, rec, _ = precision_recall_curve(yy, score)
         ap = average_precision_score(yy, score)
