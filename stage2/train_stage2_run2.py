@@ -39,9 +39,6 @@ def validate(model, loader, device, criterion, max_iters):
 def main():
     args = parse_args()
     random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed)
-    # Reproducibility: benchmark=True picks conv kernels by timing them on the
-    # hardware, which is not deterministic. deterministic=True forces
-    # reproducible kernels. Costs some throughput; buys a run you can repeat.
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     device = torch.device("cuda")
