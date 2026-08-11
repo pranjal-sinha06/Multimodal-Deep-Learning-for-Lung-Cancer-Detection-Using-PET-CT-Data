@@ -1,14 +1,5 @@
 """
-petct_cv_dataset.py  --  CT+PET dataset. Channel 2 is SUV instead of the wide window.
-
-IDENTICAL to CTCohortDataset in every respect except channel 2. Same crops (both
-arms call crop_window), same resize, same normalisation, same RNG seeding, same
-83 patients, same A=0/G=1 remap. That single-channel swap IS the experiment.
-
-The SUV channel is sampled over EXACTLY the same physical region as the CT crop,
-including jitter, via crop_utils.suv_for_window. If it were sampled at the raw
-box instead, the CT and PET channels would be spatially misaligned and any
-result would be uninterpretable.
+petct_cv_dataset.py - CT+PET dataset. Channel 2 is SUV instead of the wide window.
 
 Reads only the precomputed cache from precompute_suv.py. No DICOM access.
 """
@@ -42,7 +33,7 @@ class PETCTCohortDataset(Dataset):
             raise FileNotFoundError(
                 f"{SUV_SLICES} not found. Run precompute_suv.py first.")
         self.suv_ix = pd.read_csv(SUV_INDEX).set_index("sop")
-        self._slices = None                       # memory-mapped lazily per worker
+        self._slices = None                       
 
         self.mean = torch.tensor(S2_MEAN).view(3, 1, 1)
         self.std  = torch.tensor(S2_STD).view(3, 1, 1)
@@ -85,7 +76,7 @@ class PETCTCohortDataset(Dataset):
                if self.is_train else None)
         box = json.loads(r.box)
 
-        # ONE window, used for both modalities -> guaranteed alignment
+
         win = crop_window(hu.shape, box, jitter=0.12 if self.is_train else 0.0, rng=rng)
         X1, Y1, X2, Y2 = win
         crop = hu[Y1:Y2, X1:X2]
