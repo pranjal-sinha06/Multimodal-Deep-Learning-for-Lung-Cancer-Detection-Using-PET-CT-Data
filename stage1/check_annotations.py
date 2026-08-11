@@ -1,33 +1,15 @@
 """
-check_annotations.py  --  do the XML annotations reference CT or Secondary Capture?
-
-WHY THIS EXISTS
-  The draft states the Secondary Capture (fused PET/CT) objects carry 10,227
-  annotated slices. A join of the crops manifest against the DICOM index says
-  otherwise: all 11,297 annotated SOPs are CT objects and none is SC. Those two
-  claims cannot both be true, and the difference decides whether an SC model can
-  do detection at all.
-
-  The crops manifest is downstream of a pipeline that may have kept only CT
-  rows, so it cannot settle the question. Only the raw XML files can.
+check_annotations.py  --  do the XML annotations reference CT or Secondary Capture
 
 WHAT IT DOES
   Walks the Annotation folder, parses every PASCAL VOC XML, works out which
   DICOM object each one refers to, and reports how many resolve to CT, how many
-  to SC, and how many to neither. Read only; nothing is modified.
+  to SC, and how many to neither.
 
 USAGE
   python check_annotations.py
   python check_annotations.py --ann-dir /path/to/Annotation
   python check_annotations.py --ct-index /path/to/ct_sc_index.csv
-
-WHAT THE ANSWER MEANS
-  all CT, none SC   -> SC carries no boxes. Detection on SC is impossible and
-                       the draft's 10,227 claim must be removed.
-  some SC           -> SC supports detection. The route reopens on ~123 A/G
-                       patients and is worth serious consideration.
-  many unresolved   -> the matching strategy is wrong, not the conclusion.
-                       The script prints samples so it can be fixed.
 """
 import os, sys, glob, argparse, re
 import xml.etree.ElementTree as ET
@@ -184,7 +166,7 @@ def main():
         if i % 5000 == 0:
             print(f"  parsed {i}/{len(xmls)}")
 
-    # ---------- report ----------
+   
     print("\n" + "=" * 62)
     print("WHICH DICOM OBJECT DOES EACH ANNOTATION REFERENCE?")
     print("=" * 62)
