@@ -1,42 +1,6 @@
 """
-scanner_probe.py  --  can subtype be predicted from acquisition settings alone?
+scanner_probe.py -can subtype be predicted from acquisition settings alone
 
-WHY
-  The adenocarcinoma and squamous patients occupy contiguous identifier ranges
-  (A0165 to A0265, G0033 to G0062), which is consistent with the two groups
-  having been acquired in different periods or on different equipment. If the
-  acquisition parameters differ systematically between the classes, a network
-  can separate them by reading scanner signature rather than tumour morphology,
-  and every classification result in this dissertation inherits that doubt.
-
-  This is the same probe used to reject LIDC-IDRI as a negative source: rather
-  than argue about whether a domain shift exists, measure whether the metadata
-  alone is separable.
-
-WHAT IT DOES
-  Reads one header per annotated CT series, extracts the acquisition parameters
-  that characterise a protocol, and asks two questions:
-
-    1. Do the individual parameters differ between A and G?
-       Mann-Whitney for continuous fields, contingency counts for categorical.
-
-    2. Can a classifier predict subtype from the parameters alone?
-       Leave-one-out logistic regression on the numeric fields, scored by AUC.
-       This is the summary that matters: individually weak differences can
-       still combine into a strong signature.
-
-  Headers only, no pixel data. Nothing is modified.
-
-READING THE RESULT
-  AUC near 0.5   -> acquisition carries no subtype signal. The confound is
-                    ruled out and this should be stated in the limitations as
-                    a measured negative rather than an untested assumption.
-  AUC above 0.7  -> acquisition alone separates the classes. Any image model
-                    may be exploiting it, and the discussion must say so.
-
-USAGE
-  python scanner_probe.py
-  python scanner_probe.py --cohort pet_cohort_83.csv     # the CV arms' patients
 """
 import os, sys, glob, argparse
 from collections import Counter
@@ -118,7 +82,6 @@ def main():
         crops = crops[crops.patient.isin(keep)]
         print(f"restricted to {len(keep)} patients from {os.path.basename(args.cohort)}")
 
-    # the annotated CT series for each patient: exactly what the models see
     ann = ct[ct.sop.isin(set(crops.sop))].drop_duplicates("series")
     sub = crops.drop_duplicates("patient").set_index("patient").subtype
     print(f"{ann.patient.nunique()} patients, {len(ann)} annotated CT series\n")
@@ -218,10 +181,7 @@ def main():
 
     auc = loo_auc(Xv, y)
 
-    # A fixed threshold would be wrong here. With this sample size the null
-    # distribution of leave-one-out AUC has a standard deviation near 0.10, so
-    # values above 0.6 arise by chance often. The observed value is therefore
-    # compared against labels shuffled the same way.
+  
     print(f"\n  observed leave-one-out AUC: {auc:.3f}")
     print(f"  building the permutation null ", end="", flush=True)
     nperm = max(20, args.permutations)   # an empty null is not usable
