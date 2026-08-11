@@ -1,5 +1,5 @@
 """
-compare_arms.py  --  CT-only vs CT+PET vs Secondary Capture.
+compare_arms.py  -  CT-only vs CT+PET vs Secondary Capture.
 
 Three representations, the same 83 patients, the same folds, the same seeds and
 the same ResNet-50. The only thing that varies is what the three input channels
@@ -9,10 +9,6 @@ contain:
     CT+PET   [lung window, mediastinal window, SUV]
     SC       [R, G, B] of the workstation-fused PET/CT render
 
-Reports pooled out-of-fold patient-level AUC per seed and the difference from
-the CT-only baseline, judged against the seed-to-seed spread. The threshold
-matches the Stage 2 protocol: a difference under about two standard deviations
-is not separable from run-to-run variation.
 
     python compare_arms.py            # nested runs
     python compare_arms.py fixed      # the --fixed-epochs runs
