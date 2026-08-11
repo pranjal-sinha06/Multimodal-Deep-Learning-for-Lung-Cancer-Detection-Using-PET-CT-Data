@@ -7,16 +7,16 @@ import matplotlib.pyplot as plt
 OUT = "stage1_plots"
 os.makedirs(OUT, exist_ok=True)
 
-# discover metrics.csv from either location; map tag -> path
+# discover metrics.csv 
 found = {}
 for p in glob.glob(os.path.expanduser("~/stage1_results/stage1_*_metrics.csv")):
     tag = re.search(r"stage1_(\w+?)_metrics\.csv", os.path.basename(p)).group(1)
     found.setdefault(tag, p)
 for p in glob.glob("runs/stage1_*/metrics.csv"):
     tag = re.search(r"stage1_(\w+)", p).group(1)
-    found.setdefault(tag, p)   # ~ copy wins if both exist
+    found.setdefault(tag, p)   
 
-found = {t: p for t, p in found.items() if "smoke" not in t}  # drop smoke-gate runs
+found = {t: p for t, p in found.items() if "smoke" not in t}  
 if not found:
     raise SystemExit("no metrics.csv found in ~/stage1_results/ or runs/stage1_*/")
 
@@ -51,7 +51,7 @@ for tag in sorted(found):
     best[tag] = (float(df.val_map_50[bi]), float(df.val_map[bi]), int(df.epoch[bi]))
     print(f"{tag}: best epoch {best[tag][2]}  mAP@0.5 {best[tag][0]:.3f}  mAP@0.5:0.95 {best[tag][1]:.3f}")
 
-# 3) cross-run comparison bar (best val mAP@0.5 and mAP@0.5:0.95)
+# 3) cross-run comparison bar
 tags = sorted(best)
 import numpy as np
 x = np.arange(len(tags)); w = 0.38
