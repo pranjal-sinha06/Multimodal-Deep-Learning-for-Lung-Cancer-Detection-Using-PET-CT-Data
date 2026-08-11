@@ -1,15 +1,10 @@
 """
-verify_suv_cache.py  --  check the cache reproduces the probe's known-good numbers.
+verify_suv_cache.py - check the cache reproduces the probe's numbers.
 
-The SUV probe was run independently, from DICOMs, on your PC, and returned:
+The SUV probe was run independently, from DICOMs, and returned:
     83 patients (A 63, G 20)
     SUV_max  AUC 0.522   median A 3.42   median G 3.57
     SUV_mean AUC 0.486   median A 1.04   median G 1.37
-
-This recomputes those same per-patient values from the precomputed cache. If the
-cache is correct the medians should land within rounding of the probe's. A large
-discrepancy means the scale factor, the z matching, or the geometry is wrong,
-and training on that cache would be meaningless.
 
 Run after precompute_suv.py:
     python verify_suv_cache.py
@@ -26,7 +21,7 @@ CROPS      = os.path.join(LUNG, "stage2_crops_manifest.csv")
 COHORT     = os.path.join(LUNG, "pet_cohort_83.csv")
 SUV_CLIP   = 20.0
 
-# probe results, measured independently from DICOMs
+
 PROBE = {"A": {"max": 3.42, "mean": 1.04}, "G": {"max": 3.57, "mean": 1.37}}
 
 
@@ -45,7 +40,7 @@ def main():
         if not bool(r.covered):
             continue
         box = json.loads(c.box)
-        # margin=0, jitter=0 -> exactly the annotated box, as the probe used
+
         win = crop_window((512, 512), box, margin=0.0, jitter=0.0)
         pet = {"zs": np.array([r.ct_z]),
                "vol": np.asarray(slices[int(r.row)], dtype=np.float32)[None, ...],
@@ -53,7 +48,7 @@ def main():
                "dr": float(r.pet_dr), "dc": float(r.pet_dc)}
         ctg = {"x0": float(r.ct_x0), "y0": float(r.ct_y0), "z": float(r.ct_z),
                "dr": float(r.ct_dr), "dc": float(r.ct_dc)}
-        # large clip so verification is not distorted by the training-time [0,20] clip
+
         patch = suv_for_window(win, ctg, pet, suv_clip=1000.0) * 1000.0
         if patch.size == 0 or patch.max() == 0:
             continue
