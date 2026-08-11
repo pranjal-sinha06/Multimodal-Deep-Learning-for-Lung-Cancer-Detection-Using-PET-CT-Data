@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# reuse the EXACT verified Stage 2 crop/window/normalise contract (no reimplementation)
+# reuse the exact verified Stage 2 crop/window/normalise contract 
 from stage2_dataset import (window_channels, crop_box, load_hu_cached,
                             S2_MEAN, S2_STD, CROP_SIZE, MARGIN, ROOT)
 from torchvision.transforms import v2
@@ -22,8 +22,8 @@ CLASSES = ["A", "B", "G"]
 
 def parse_args():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--score", type=float, default=0.5)   # Stage 1 confidence threshold
-    ap.add_argument("--max-patients", type=int, default=0)  # smoke: limit patients
+    ap.add_argument("--score", type=float, default=0.5)   
+    ap.add_argument("--max-patients", type=int, default=0) 
     return ap.parse_args()
 
 def main():
@@ -35,13 +35,13 @@ def main():
     std = torch.tensor(S2_STD).view(3, 1, 1)
     resize = v2.Resize((CROP_SIZE, CROP_SIZE), antialias=True)
 
-    # ground-truth subtype per patient, from Stage 2 crop manifest (test split)
+    # ground-truth subtype per patient, from Stage 2 crop manifest 
     s2 = pd.read_csv(STAGE2_MANIFEST)
     s2t = s2[s2.split == "test"]
     true_sub = s2t.groupby("patient").subtype.first().to_dict()
     lab_idx = {"A": 0, "B": 1, "G": 2}
 
-    # all test slices (positive + negative) for the honest cascade
+    # all test slices (positive + negative) 
     s1 = pd.read_csv(STAGE1_MANIFEST)
     test = s1[s1.split == "test"].reset_index(drop=True)
     patients = sorted(test.patient.unique())
@@ -63,7 +63,7 @@ def main():
 
     for _, r in test.iterrows():
         hu = load_hu_cached(r.sop)
-        yolo_img = (window_channels(hu) * 255).astype(np.uint8).transpose(1, 2, 0)  # native res, like to_yolo.py
+        yolo_img = (window_channels(hu) * 255).astype(np.uint8).transpose(1, 2, 0)  
         res = detector.predict(yolo_img, conf=args.score, verbose=False)[0]
         if res.boxes is None or len(res.boxes) == 0:
             continue
@@ -85,7 +85,7 @@ def main():
         prob_sum[r.patient] += probs.sum(axis=0)
         n_boxes[r.patient] += len(probs)
 
-    # patient-level aggregation: mean prob -> argmax
+    
     detected = sorted(prob_sum.keys())
     n_total = len(patients)
     n_detected = len(detected)
@@ -121,7 +121,7 @@ def main():
     plt.savefig(os.path.join(OUT, "cm_pipeline_lesion.png"), dpi=120)
     print(f"\nconfusion matrix -> {OUT}/cm_pipeline_lesion.png")
 
-    # save a small summary
+   
     with open(os.path.join(OUT, "pipeline_summary.txt"), "w") as f:
         f.write(f"score_threshold={args.score}\n")
         f.write(f"detection_recall={n_detected}/{n_total}={n_detected/n_total:.3f}\n")
