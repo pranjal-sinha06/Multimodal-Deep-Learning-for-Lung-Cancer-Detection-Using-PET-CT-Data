@@ -1,19 +1,6 @@
 """
-fix_sc_manifest.py  --  assign splits and restrict the SC manifest to the cohort.
+fix_sc_manifest.py  - assign splits and restrict the SC manifest to the cohort.
 
-WHY
-  build_sc_manifest.py could not find pet_cohort_flags.csv on the cluster, so it
-  fell back to an empty split column. It also kept 133 patients, one more than
-  the 132 SC patients inside the 348 working cohort, because nothing constrained
-  it to that cohort.
-
-  Both are fixed here using stage2_crops_manifest.csv, which is already on the
-  cluster and is the authority for both the cohort membership and the
-  patient-level split used throughout the dissertation. Taking the split from
-  the same file the CT arm uses guarantees the two arms are aligned: a patient
-  in CT's test partition is in SC's test partition.
-
-USAGE
   python fix_sc_manifest.py
 """
 import os, sys
@@ -22,7 +9,7 @@ import pandas as pd
 LUNG = "/sharedscratch/ps306/lung"
 SC_IN   = os.path.join(LUNG, "sc_crops_manifest.csv")
 CT_MAN  = os.path.join(LUNG, "stage2_crops_manifest.csv")
-SC_OUT  = os.path.join(LUNG, "sc_crops_manifest.csv")       # overwritten in place
+SC_OUT  = os.path.join(LUNG, "sc_crops_manifest.csv")   
 
 
 def main():
