@@ -93,7 +93,7 @@ if __name__ == "__main__":
         print(f"[{split}] batch ok: boxes per sample={[t['boxes'].shape[0] for t in targets]} "
               f"img range post-normalise=[{imgs[0].min():.2f}, {imgs[0].max():.2f}]")
 
-    # explicitly exercise a positive slice (guarantees the box path ran)
+
     ds = LungDetectionDataset(m, "train")
     pos_i = int(ds.df.index[ds.df.role == "positive"][0])
     _, tgt = ds[pos_i]
