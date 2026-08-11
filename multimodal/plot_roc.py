@@ -1,30 +1,6 @@
 """
-plot_roc.py  --  ROC curves for every arm, from the predictions already written.
+plot_roc.py -ROC curves for every arm, from the predictions
 
-ROC AUC is the headline metric of the whole PET/SC comparison but has never been
-plotted. This reads the fold_predictions.csv files each arm wrote, so it needs no
-retraining and runs in seconds.
-
-    python plot_roc.py            # nested runs (default)
-    python plot_roc.py fixed      # the --fixed-epochs runs
-
-Writes to figures/petct/:
-    roc_<mode>_patient.png        mean per arm with a +-1 SD band   <- the chapter figure
-    roc_<mode>_patient_seeds.png  every seed drawn separately       <- appendix
-    roc_<mode>_crop.png           crop level, mean per arm          <- appendix
-
-ON AVERAGING
-  The mean curve is computed by vertical averaging: each seed's true positive
-  rate is interpolated onto a common false positive rate grid and those are
-  averaged, which is the standard construction for ROC curves. Interpolation is
-  a defined operation on a monotonic curve, so the mean is well posed. The
-  per-seed figure is produced alongside it so the raw spread is visible and the
-  averaging is never the only thing on offer.
-
-  This differs from the treatment of the precision-recall curves elsewhere,
-  which are overlaid rather than averaged. Precision is not monotonic in recall
-  and each seed produces its own recall grid, so averaging there would be a
-  weaker construction than it is here.
 """
 import os, sys, glob
 import numpy as np, pandas as pd
