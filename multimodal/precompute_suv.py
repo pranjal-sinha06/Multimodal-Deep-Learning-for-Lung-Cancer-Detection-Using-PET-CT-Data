@@ -1,33 +1,6 @@
 """
-precompute_suv.py  --  build the SUV cache once, so training reads no DICOMs.
+precompute_suv.py - build the SUV cache once, so training reads no DICOMs.
 
-WHY
-  pet_index.csv / ct_sc_index.csv carry Windows paths (E:\\...) that do not exist
-  on the cluster, and re-reading ~35,000 PET DICOMs every epoch in every worker
-  would be pathologically slow. This resolves paths once, computes SUV once, and
-  writes a compact cache that training memory-maps.
-
-WHAT IT WRITES
-  suv_slices.npy   (N, 200, 200) float16. One PET slice per ANNOTATED CT slice,
-                   already matched by z. Memory-mapped at training time, so the
-                   per-worker memory cost is ~zero.
-  suv_index.csv    one row per annotated CT slice:
-                     sop, patient, row, covered,
-                     ct_x0, ct_y0, ct_z, ct_dr, ct_dc       (CT slice geometry)
-                     pet_x0, pet_y0, pet_dr, pet_dc, pet_dz (matched PET slice)
-                   Everything the dataset needs. No DICOM access during training.
-
-  Storing one PET slice per annotated CT slice rather than whole volumes is the
-  difference between ~450 MB memory-mapped and ~1.6 GB resident per worker.
-
-USAGE (on the cluster, from /sharedscratch/ps306/lung)
-    python precompute_suv.py --limit 2      # trial first
-    python precompute_suv.py                # full run
-
-VERIFY
-  SUV maxima are printed per patient. Tumour SUV_max is normally about 3-20.
-  Near zero, or in the thousands, means the scale factor is wrong: stop and
-  report rather than training on it.
 """
 import os, sys, glob, argparse, datetime
 import numpy as np, pandas as pd
@@ -45,12 +18,12 @@ CROPS      = os.path.join(LUNG, "stage2_crops_manifest.csv")
 SUV_SLICES = os.path.join(LUNG, "suv_slices.npy")
 SUV_INDEX  = os.path.join(LUNG, "suv_index.csv")
 
-MARKER = "Lung-PET-CT-Dx"     # every stored path contains this component
-PET_HW = (200, 200)           # verified constant across all 133 PET series
-Z_TOL  = 10.0                 # mm; beyond this the CT slice has no PET coverage
+MARKER = "Lung-PET-CT-Dx"     
+PET_HW = (200, 200)           
+Z_TOL  = 10.0                 
 
 
-# ── path resolution ───────────────────────────────────────────────────────
+
 
 def to_relative(win_path):
     p = str(win_path).replace("\\", "/")
@@ -74,7 +47,7 @@ def detect_root(sample_rel):
     return None
 
 
-# ── SUV ───────────────────────────────────────────────────────────────────
+
 
 def suv_factor(ds):
     """Body-weight SUV factor for Units == BQML.
@@ -125,7 +98,7 @@ def ct_geometry(path, root):
     return {"x0": ipp[0], "y0": ipp[1], "z": ipp[2], "dr": ps[0], "dc": ps[1]}
 
 
-# ── main ──────────────────────────────────────────────────────────────────
+
 
 def main():
     ap = argparse.ArgumentParser()
