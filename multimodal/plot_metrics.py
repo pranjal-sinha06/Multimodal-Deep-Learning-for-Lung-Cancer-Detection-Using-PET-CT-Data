@@ -1,27 +1,7 @@
 """
-plot_metrics.py  --  per-arm, per-metric and confusion-matrix figures.
+plot_metrics.py - per-arm, per-metric and confusion-matrix figures.
 
-Reads the fold_predictions.csv files each arm already wrote (columns
-patient, y, p0, p1) and produces three families of figure in a new folder,
-figures/petct/metric_figures/. Nothing existing is touched.
-
-All figures are PATIENT LEVEL: each patient's crop probabilities are averaged
-and then thresholded once, matching the cm_patient convention used elsewhere.
-Crop-level numbers look far tighter than the evidence supports, because the
-~4,600 crops come from only 83 patients, so they are not plotted here.
-
-Everything is computed per seed and then summarised across seeds, so the spread
-that the seed protocol exists to measure is visible in every figure.
-
-Metrics, with squamous cell carcinoma as the positive class where a positive
-class is needed:
-  accuracy                overall
-  precision, recall, F1   reported for BOTH classes, since with 63 vs 20
-                          patients a single averaged value hides the minority
-                          class, which is exactly where the model struggles.
-
-    python plot_metrics.py            # nested runs (default)
-    python plot_metrics.py fixed      # the --fixed-epochs runs
+Reads the fold_predictions.csv files each arm wrote 
 
 Figures written:
   metrics_<arm>.png       one per arm: metrics on the x-axis, bar = seed mean,
@@ -47,7 +27,7 @@ ARMS = [
 CLASSES = ["Adenocarcinoma", "Squamous cell carcinoma"]   # index 0, 1
 POS = 1                                                    # squamous is positive
 
-# the metrics, in plot order; each entry is (key, label, function)
+
 METRICS = [
     ("accuracy",       "Accuracy",        lambda y, p: accuracy_score(y, p)),
     ("precision_adeno","Precision (Adeno)",lambda y, p: precision_score(y, p, pos_label=0, zero_division=0)),
