@@ -8,7 +8,7 @@
 #SBATCH --output=logs/suvpre_%j.out
 #SBATCH --error=logs/suvpre_%j.err
 
-# Builds suv_slices.npy + suv_index.csv. CPU only, run once.
+
 PY=/home/ps306/.conda/envs/lungtrain/bin/python
 mkdir -p logs
 cd /sharedscratch/ps306/lung
