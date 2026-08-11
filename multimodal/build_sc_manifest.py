@@ -1,30 +1,11 @@
 """
-build_sc_manifest.py  --  turn the Secondary Capture annotations into a manifest.
+build_sc_manifest.py  -  turn the Secondary Capture annotations into a manifest.
 
-CONTEXT
-  check_annotations.py established that of 31,562 annotation files, 20,484
-  reference CT objects and 10,400 reference Secondary Capture (fused PET/CT)
-  objects. The existing pipeline uses only CT annotations, so the SC ones have
-  never been touched. This script extracts them into the same shape as
-  stage2_crops_manifest.csv so they can be used directly.
-
-WHAT IT HANDLES
-  - Label case is inconsistent in the source ('A' 13065 vs 'a' 7911, and the
-    same for G and B). Labels are upper-cased before use, otherwise the class
-    set silently doubles.
-  - A 'Q' label appears 10 times and is not a valid subtype. Such rows are
-    dropped and counted, never remapped.
-  - Patient identity is not derivable from the XML path, so it is joined
-    through the SOP UID via ct_sc_index.csv.
-  - Annotations resolving to neither CT nor SC are checked against pet_index,
-    to establish whether PET objects are annotated too.
-
-OUTPUT
+output
   sc_crops_manifest.csv   patient, split, sop, path, box, subtype, label_idx
                           one row per box, matching the CT manifest's columns
-  sc_annotation_audit.csv per-file record, including dropped rows and reasons
+  sc_annotation_audit.csv per-file record
 
-USAGE
   python build_sc_manifest.py
   python build_sc_manifest.py --ann-dir /path/to/Annotation
 """
@@ -152,7 +133,6 @@ def main():
 
     df = pd.DataFrame(rows)
 
-    # subtype from the patient id is the authority; the XML label is a check
     df["subtype_from_id"] = df.patient.str.extract(r"Lung_Dx-([A-Za-z])")[0].str.upper()
     mism = int((df.subtype != df.subtype_from_id).sum())
     print(f"\n  boxes whose XML label disagrees with the patient id: {mism} "
