@@ -43,7 +43,7 @@ for metric, lab in [("map50", "mAP@0.5"), ("map", "mAP@0.5:0.95")]:
     plt.savefig(p, dpi=140); plt.close()
     print("wrote", p)
 
-# gap-only summary: does the gap widen from best to last?
+
 fig, ax = plt.subplots(figsize=(7.5, 4.4))
 for which, c, m in [("best", "#4C72B0", "o"), ("last", "#C44E52", "s")]:
     sub = d[d.which == which].sort_values("run")
