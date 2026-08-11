@@ -1,18 +1,10 @@
 """
-Collects the Stage 2 seed sweep and answers one question: which ablation
-deltas survive run-to-run noise?
-
-TWO GRANULARITIES, from two sources:
-  per-crop   <- stage2_runs/<tag>/metrics.csv   (what best.pth is selected on)
-  per-lesion <- figures/stage2/<tag>/scores_val.csv  (written by eval_stage2.py;
-                this is the 0.559/0.575 number the dissertation reports)
+Collects the Stage 2 seed sweep
 
 Run sweep_train.slurm, then sweep_eval.slurm, then this.
 
 Runs are reproducible: the dataset RNG is seeded from torch's per-worker
-generator and cudnn is deterministic. Verify with verify_repro.slurm before
-trusting these numbers. What is measured here is therefore genuine seed
-variance, and it is the noise floor against which ablation deltas are judged.
+generator and cudnn is deterministic.
 """
 import os, argparse
 import numpy as np, pandas as pd
