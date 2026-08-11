@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-# from scratch = build from architecture yaml (random init), NOT yolov8s.pt
+# from scratch = build from architecture yaml (random init)
 model = YOLO("yolov8s.yaml")
 
 model.train(
@@ -9,7 +9,7 @@ model.train(
     batch=16,
     imgsz=512,
     optimizer="Adam",
-    lr0=0.001,   # paper is silent on lr; Adam-appropriate default (0.01 is SGD-tuned)
+    lr0=0.001,  
     seed=0,      # reproducibility
     device=0,
     project="/sharedscratch/ps306/lung/runs",
