@@ -1,8 +1,7 @@
 from pathlib import Path
 
-# --------------------------------------------------
+
 # CHANGE THIS TO THE FOLDER YOU WANT TO SCAN
-# --------------------------------------------------
 ROOT_FOLDER = Path(r"E:\Dissertation - Code\HPC -Files")
 
 # Output text file
