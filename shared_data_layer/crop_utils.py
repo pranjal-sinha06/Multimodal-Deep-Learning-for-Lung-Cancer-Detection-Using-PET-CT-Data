@@ -1,12 +1,12 @@
 """
-crop_utils.py  --  the crop window, as COORDINATES.
+crop_utils.py -  the crop window, as COORDINATES.
 
 stage2_dataset.crop_box() returns the cropped array. The CT+PET arm needs those coordinates: the SUV
 channel must be sampled over exactly the same physical region as the CT
 channels, or the two are spatially misaligned and the fusion test is invalid.
 
 crop_window() replicates crop_box()'s logic and
-returns (X1, Y1, X2, Y2). Both arms use it.
+returns (X1, Y1, X2, Y2).
 """
 import numpy as np
 from stage2_dataset import MARGIN
@@ -54,11 +54,11 @@ def suv_for_window(win, ct_geom, pet, suv_clip=20.0):
     if abs(pet["zs"][k] - ct_geom["z"]) > 10.0:      # no PET coverage here
         return np.zeros((h, w), np.float32)
 
-    # CT crop pixel centres -> mm
+    # CT crop pixel centres - mm
     x_mm = ct_geom["x0"] + (X1 + np.arange(w)) * ct_geom["dc"]
     y_mm = ct_geom["y0"] + (Y1 + np.arange(h)) * ct_geom["dr"]
 
-    # mm -> PET voxel index
+    # mm - PET voxel index
     px = np.round((x_mm - pet["x0"]) / pet["dc"]).astype(np.int64)
     py = np.round((y_mm - pet["y0"]) / pet["dr"]).astype(np.int64)
 
