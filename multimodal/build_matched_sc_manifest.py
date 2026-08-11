@@ -1,33 +1,21 @@
 """
-build_matched_sc_manifest.py  --  control for annotation density.
+build_matched_sc_manifest.py  -  control for annotation density.
 
-WHY
-  On the comparison cohort the Secondary Capture annotations are denser than the
-  CT ones. If the SC arm scores higher, part of that could be more training
-  boxes rather than a better representation, and the objection cannot be
-  answered after the fact.
-
-  This writes a second SC manifest subsampled so each patient contributes the
-  same number of boxes as they do in the CT arm. Running the SC model on it
-  isolates the representation from the annotation density.
-
-DESIGN
   Matching is per patient, not global. A global match would preserve the total
   while distorting which patients dominate the training set.
 
-  Patients whose SC boxes are already fewer than their CT boxes are kept whole;
+  Patients whose SC boxes are already fewer than their CT boxes are kept whole
   they cannot be matched upward and are reported separately.
 
   The subsample is drawn once with a fixed seed and written to disk, so every
   fold and every training seed sees the identical subset. Drawing it per run
-  would add a second source of variance and confound the comparison it exists
-  to clean up.
+  would add a second source of variance.
 
-SAFETY
+
   Reads  sc_crops_manifest.csv, stage2_crops_manifest.csv, pet_cohort_83.csv
-  Writes sc_crops_manifest_matched.csv   (new file; nothing is overwritten)
+  Writes sc_crops_manifest_matched.csv
 
-USAGE
+use-
   python build_matched_sc_manifest.py
   python build_matched_sc_manifest.py --seed 0
 """
