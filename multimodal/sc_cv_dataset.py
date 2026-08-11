@@ -1,26 +1,11 @@
 """
-sc_cv_dataset.py  --  Secondary Capture dataset for the 2-class CV comparison.
+sc_cv_dataset.py -Secondary Capture dataset for the 2-class CV comparison.
 
 The SC arm is the third representation in the comparison:
-    CT-only  [lung window, mediastinal window, wide window]   AUC 0.779
-    CT+PET   [lung window, mediastinal window, SUV]           AUC 0.740
+    CT-only  [lung window, mediastinal window, wide window]
+    CT+PET   [lung window, mediastinal window, SUV]           
     SC       [R, G, B] of the workstation-fused PET/CT render
 
-All three use the same 83 patients, the same folds, the same seeds and the same
-ResNet-50. Cropping goes through crop_utils.crop_window, the identical function
-the CT and CT+PET arms use, so the geometry is the same and only the pixel
-content differs.
-
-ONE DELIBERATE DIFFERENCE, STATED RATHER THAN HIDDEN
-  Normalisation cannot be shared. The CT arms normalise windowed HU in [0,1]
-  using statistics computed over that distribution; SC is 8-bit colour in
-  [0,255] with an entirely different distribution, so those statistics are
-  meaningless here. ImageNet statistics are used instead, which is the standard
-  choice for RGB input to an ImageNet-pretrained backbone.
-
-  Normalisation is a property of the representation, not of the model, so this
-  does not break the single-variable comparison. It does need saying in the
-  methodology.
 """
 import os, json
 import numpy as np, pandas as pd, torch
@@ -54,13 +39,13 @@ class SCCohortDataset(Dataset):
         df["y"] = df.subtype.map(SUBTYPE_TO_LABEL)
         assert set(df.y.unique()) <= {0, 1}, "label remap produced non-binary labels"
 
-        # keep only boxes whose slice actually made it into the cache
+ 
         idx = pd.read_csv(SC_INDEX).set_index("sop")
         df = df[df.sop.isin(idx.index)].copy()
         df["row"] = df.sop.map(idx.row)
         self.df = df.reset_index(drop=True)
         self.is_train = is_train
-        self._slices = None                       # memory-mapped per worker
+        self._slices = None                     
 
         self.mean = torch.tensor(IMAGENET_MEAN).view(3, 1, 1)
         self.std  = torch.tensor(IMAGENET_STD).view(3, 1, 1)
@@ -89,7 +74,7 @@ class SCCohortDataset(Dataset):
         X1, Y1, X2, Y2 = crop_window(img.shape[:2], box,
                                      jitter=0.12 if self.is_train else 0.0, rng=rng)
         crop = np.asarray(img[Y1:Y2, X1:X2], dtype=np.float32) / 255.0
-        crop = np.transpose(crop, (2, 0, 1))                # HWC -> CHW
+        crop = np.transpose(crop, (2, 0, 1))               
 
         t = torch.from_numpy(np.ascontiguousarray(crop))
         t = self.resize(t)
