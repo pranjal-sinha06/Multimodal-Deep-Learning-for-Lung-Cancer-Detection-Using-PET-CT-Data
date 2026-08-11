@@ -1,14 +1,13 @@
 """
-plot_stage1_figures.py  --  the two Stage 1 figures that were never generated.
+plot_stage1_figures.py
 
 Produces:
-  figures/stage1_two_arch_map.png       Faster R-CNN vs the two YOLO runs, the
-                                        two-architecture ceiling made visual
+  figures/stage1_two_arch_map.png       Faster R-CNN vs the two YOLO runs
   figures/stage1/annotation_overlay_example.png
                                         a parsed box drawn on its CT slice, the
                                         visual proof that annotation parsing works
 
-Run on the cluster, where both the metrics.json files and the DICOMs live.
+
 
   python plot_stage1_figures.py                      # both figures
   python plot_stage1_figures.py --patient Lung_Dx-A0001   # pick the overlay case
@@ -26,8 +25,7 @@ CT_IDX = os.path.join(LUNG, "ct_sc_index.csv")
 OUTDIR = "figures"
 MARKER = "Lung-PET-CT-Dx"
 
-# the two YOLO result CSVs; the from-scratch run collapses late in training and
-# is truncated at its peak so the figure shows the ceiling, not the instability
+
 YOLO_FILES = {
     "YOLOv8s (COCO-pretrained)": os.path.join(LUNG, "yolo_results_pretrained.csv"),
     "YOLOv8s (from scratch)":    os.path.join(LUNG, "yolo_results_scratch.csv"),
@@ -47,7 +45,7 @@ def frcnn_curves():
         pairs = [(e, m) for e, m in zip(ep, mp) if m is not None]
         if not pairs:
             continue
-        # a run whose val mAP never exceeds 0.3 has failed; skip it
+        
         if max(m for _, m in pairs) < 0.30:
             print(f"  skipping failed run {run} (peak {max(m for _,m in pairs):.3f})")
             continue
@@ -60,7 +58,7 @@ def yolo_curve(path):
     d.columns = [c.strip() for c in d.columns]
     col = next(c for c in d.columns if "mAP50" in c and "95" not in c)
     m = d[col].values
-    # truncate at the point of collapse, if any (a fall to below half the peak)
+    # truncate at the point of collapse, if any
     peak = m.max()
     cut = len(m)
     for i in range(1, len(m)):
@@ -74,12 +72,12 @@ def fig_two_arch():
     fig, ax = plt.subplots(figsize=(8, 5.2))
 
     frc = frcnn_curves()
-    # plot each FRCNN run faintly, and their envelope as the representative line
+    # plot each FRCNN run
     if frc:
         for run, pairs in frc.items():
             e = [p[0] for p in pairs]; m = [p[1] for p in pairs]
             ax.plot(e, m, color="#4C72B0", alpha=0.28, lw=1)
-        # a single bold FRCNN line: the per-epoch max across runs
+        # a single bold FRCNN line
         allep = sorted({p[0] for pairs in frc.values() for p in pairs})
         env = []
         for e in allep:
