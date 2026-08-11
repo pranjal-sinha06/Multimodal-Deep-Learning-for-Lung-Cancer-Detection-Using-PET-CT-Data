@@ -1,22 +1,10 @@
 """
 make_detection_examples.py
 
-Generates the qualitative Stage 1 figure for the dissertation
-(fig:det_examples in subsec:detection_examples): CT slices with the
+Generates the Stage 1 figure. CT slices with the
 predicted boxes (from the best Faster R-CNN detector) drawn against the
 radiologist reference boxes, chosen to show a good detection, a loosely
 localised one, and a false positive.
-
-Run this on the cluster (Hypatia), from /sharedscratch/ps306/lung, inside
-the lungtrain env, on a GPU node (it does one FRCNN forward pass per slice).
-
-    /home/ps306/.conda/envs/lungtrain/bin/python make_detection_examples.py
-
-It reads the same manifests, HU cache and windowing the pipeline uses, so the
-crops it draws are identical to what the detector actually saw. Nothing here
-retrains or changes any result; it only loads the saved checkpoint and draws.
-
-Output: figures/stage1/detection_examples.png  (the file the .tex expects).
 """
 
 import os
@@ -31,10 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
-# The pipeline's own windowing and HU cache, imported so the input is
-# byte-for-byte what the detector was trained and evaluated on. Stage 1 has
-# no named HU loader; it reads one .npy per slice from CACHE keyed by SOP UID
-# (stage1_dataset.py line 41), so we do exactly the same here.
+
 from stage1_dataset import window_channels, CACHE
 
 
@@ -44,10 +29,7 @@ def load_hu(sop):
     return np.load(_os.path.join(CACHE, sop + ".npy")).astype(np.float32)
 
 
-# ----------------------------------------------------------------------
-# Config. These paths match the pipeline; override on the command line if
-# any differ on your cluster (--ckpt, --manifest).
-# ----------------------------------------------------------------------
+
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default=os.path.expanduser(
@@ -70,10 +52,6 @@ def parse_args():
     return ap.parse_args()
 
 
-# ----------------------------------------------------------------------
-# Model: rebuild exactly as trained (2-class, COCO-pretrained architecture),
-# then load the saved weights.
-# ----------------------------------------------------------------------
 def build_detector(ckpt_path, device):
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(weights=None)
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -116,9 +94,7 @@ def predict(model, sop, device, score_thresh):
     return boxes[keep], scores[keep]
 
 
-# ----------------------------------------------------------------------
-# Pick one slice for each of the three cases we want to illustrate.
-# ----------------------------------------------------------------------
+
 def categorise(gt_boxes, pred_boxes, args):
     """
     Return one of 'good', 'loose', 'false_positive', or None for this slice,
@@ -129,7 +105,7 @@ def categorise(gt_boxes, pred_boxes, args):
         return "false_positive" if len(pred_boxes) > 0 else None
 
     if len(pred_boxes) == 0:
-        return None  # a miss; not one of the three cases we illustrate
+        return None  
 
     # best IoU between any prediction and any GT box on this slice
     best = max(iou(p, g) for p in pred_boxes for g in gt_boxes)
@@ -183,8 +159,7 @@ def main():
     neg = df[df["role"] == "negative"]["sop"].drop_duplicates()
     pos = pos.sample(frac=1.0, random_state=args.seed)
     neg = neg.sample(frac=1.0, random_state=args.seed)
-    # positives first (fills good/loose, and can also yield a stray-box FP),
-    # then negatives (fills false_positive if not already found).
+    
     order = list(pos) + list(neg)
 
     for sop in order:
@@ -197,7 +172,7 @@ def main():
         if cat and picks[cat] is None:
             picks[cat] = (sop, gt, pred)
 
-    # assemble a single side-by-side panel of whatever cases were found
+    # assemble a single side-by-side panel of cases found
     labels = {"good": "well localised",
               "loose": "loosely localised",
               "false_positive": "false positive"}
