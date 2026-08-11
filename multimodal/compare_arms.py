@@ -10,8 +10,8 @@ contain:
     SC       [R, G, B] of the workstation-fused PET/CT render
 
 
-    python compare_arms.py            # nested runs
-    python compare_arms.py fixed      # the --fixed-epochs runs
+    python compare_arms.py          
+    python compare_arms.py fixed     
 """
 import sys, glob
 import numpy as np, pandas as pd
