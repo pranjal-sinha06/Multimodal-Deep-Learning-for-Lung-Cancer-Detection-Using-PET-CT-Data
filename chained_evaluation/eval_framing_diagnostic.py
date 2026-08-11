@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# reuse the EXACT verified Stage 2 crop/window/normalise contract
+
 from stage2_dataset import (window_channels, crop_box, load_hu_cached,
                             S2_MEAN, S2_STD, CROP_SIZE, MARGIN, ROOT)
 from torchvision.transforms import v2
@@ -80,14 +80,14 @@ def main():
 
     for _, r in test.iterrows():
         hu = load_hu_cached(r.sop)
-        # --- YOLO branch (all slices) ---
+
         yolo_img = (window_channels(hu) * 255).astype(np.uint8).transpose(1, 2, 0)
         res = detector.predict(yolo_img, conf=args.score, verbose=False)[0]
         if res.boxes is not None and len(res.boxes) > 0:
             s, n = classify_crops(clf, device, resize, mean, std, hu,
                                   res.boxes.xyxy.cpu().numpy())
             yolo_sum[r.patient] += s; yolo_n[r.patient] += n
-        # --- GT branch (positive slices only, boxes from manifest) ---
+
         if r.role == "positive":
             gt_boxes = json.loads(r.boxes)
             if gt_boxes:
@@ -98,7 +98,7 @@ def main():
     n_det, n_tot = len(detected), len(patients)
     print(f"\nStage 1 detection recall: {n_det}/{n_tot} = {n_det/n_tot:.3f}")
 
-    # Both metrics computed on the SAME detected patient set
+    # Both metrics computed on the same detected patient set
     y_true = [LAB[true_sub[p]] for p in detected]
     yolo_pred = [int((yolo_sum[p] / yolo_n[p]).argmax()) for p in detected]
     gt_pred = [int((gt_sum[p] / gt_n[p]).argmax()) for p in detected if gt_n[p] > 0]
