@@ -9,7 +9,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# reuse the EXACT verified Stage 2 crop/window/normalise contract
+
 from stage2_dataset import (window_channels, crop_box, load_hu_cached,
                             S2_MEAN, S2_STD, CROP_SIZE, MARGIN, ROOT)
 from torchvision.transforms import v2
@@ -47,7 +47,6 @@ def main():
         test = test[test.patient.isin(patients)].reset_index(drop=True)
     print(f"FRCNN cascade over {len(patients)} test patients, {len(test)} slices, score>={args.score}")
 
-    # detector: build identically to training, load run3 best
     detector = fasterrcnn_resnet50_fpn(weights=None)
     detector.roi_heads.box_predictor = FastRCNNPredictor(
         detector.roi_heads.box_predictor.cls_score.in_features, num_classes=2)
@@ -64,7 +63,7 @@ def main():
 
     for _, r in test.iterrows():
         hu = load_hu_cached(r.sop)
-        # FRCNN input contract: [0,1] windowed tensor, model normalises internally (no manual ImageNet stats)
+
         det_in = torch.from_numpy(window_channels(hu)).to(device)  # 3,H,W float [0,1]
         with torch.no_grad():
             pred = detector([det_in])[0]
@@ -74,7 +73,7 @@ def main():
             continue
         crops = []
         for b in boxes:
-            crop = crop_box(hu, b.tolist(), margin=MARGIN, jitter=0.0)  # exact Stage 2 crop
+            crop = crop_box(hu, b.tolist(), margin=MARGIN, jitter=0.0)  
             if crop.size == 0:
                 continue
             img = torch.from_numpy(window_channels(crop))
