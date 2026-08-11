@@ -1,14 +1,9 @@
 """
-Seed-aggregated Stage 2 figures, for the dissertation.
-
-The sweep produces 5 of every figure per run (one per seed). Putting one
-arbitrary seed in Chapter 5 reports a single draw, which is exactly what the
-sweep exists to prevent, and contradicts a mean +- SD table.
+Seed-aggregated Stage 2 figures.
 
 This reads the scores_<split>.csv that eval_stage2.py already wrote for every
 seed and emits ONE figure per run, showing the mean across seeds with its
-spread. Same layout and palette as eval_stage2.py so the chapter stays visually
-consistent.
+spread.
 
 Run AFTER sweep_eval.slurm.
 
