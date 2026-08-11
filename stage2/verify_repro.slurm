@@ -12,10 +12,7 @@
 # RUN THIS FIRST, BEFORE sweep_train.slurm.
 #
 # Trains seed 0 twice on a truncated loop (2 epochs, 10 train iters, 5 val
-# iters) and checks the two metrics.csv files match exactly. Takes minutes,
-# not hours, and proves determinism before 25 full jobs are committed.
-#
-# If this fails, the sweep is measuring plumbing noise, not seeds.
+# iters) and checks the two metrics.csv files match exactly.
 PY=/home/ps306/.conda/envs/lungtrain/bin/python
 
 mkdir -p logs
@@ -36,7 +33,7 @@ import sys, pandas as pd
 a = pd.read_csv("stage2_runs/repro_a/metrics.csv")
 b = pd.read_csv("stage2_runs/repro_b/metrics.csv")
 
-# time_s is wall-clock and always differs. Everything else must match bitwise.
+
 cols = [c for c in a.columns if c != "time_s"]
 a, b = a[cols], b[cols]
 
