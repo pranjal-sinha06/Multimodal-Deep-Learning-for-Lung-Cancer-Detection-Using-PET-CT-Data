@@ -19,7 +19,7 @@ print("\nour dataset output (already normalised):")
 print("  shape:", tuple(img.shape), "range:", round(float(img.min()),2), "to", round(float(img.max()),2),
       "mean:", round(float(img.mean()),3))
 
-# what the model's transform does to our already-normalised input
+# what the model's transform does to already-normalised input
 images, _ = model.transform([img], None)
 t_img = images.tensors[0]
 print("\nafter model.transform (what the backbone actually sees):")
