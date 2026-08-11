@@ -44,12 +44,6 @@ class LungSubtypeDataset(Dataset):
     def __getitem__(self, i):
         r = self.df.iloc[i]
         hu = load_hu_cached(r.sop)
-        # Seed numpy from torch's per-worker RNG. PyTorch draws a fresh base_seed
-        # per epoch and gives each worker base_seed+worker_id, so this is
-        # deterministic given torch.manual_seed(args.seed) in the trainer, while
-        # still varying per item, per worker and per epoch. A bare
-        # default_rng() reseeds from OS entropy and is not reproducible;
-        # default_rng(fixed) would freeze augmentation to one view per item.
         rng = (np.random.default_rng(torch.randint(0, 2**31 - 1, (1,)).item())
                if self.is_train else None)
         crop = crop_box(hu, json.loads(r.box), jitter=0.12 if self.is_train else 0.0, rng=rng)
