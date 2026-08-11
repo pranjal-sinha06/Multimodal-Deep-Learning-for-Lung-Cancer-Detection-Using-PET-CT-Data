@@ -1,32 +1,7 @@
-"""
-precompute_sc.py  --  cache the Secondary Capture RGB slices for training.
 
-WHY
-  The SC objects are RGB DICOMs with no HU cache behind them. Parsing them
-  during training would repeat the same DICOM decode in every worker, every
-  epoch, every fold and every seed, exactly the problem precompute_suv.py
-  solved for PET.
+# precompute_sc.py - cache the Secondary Capture RGB slices for training.
+           
 
-  Full 512x512 slices are stored rather than pre-cut windows. The CT arm crops
-  from full slices, so caching windows here would make the two arms differ in
-  more than the representation under test.
-
-WHAT IT WRITES
-  sc_slices.npy       (N, 512, 512, 3) uint8, memory-mapped at training time
-  sc_slice_index.csv  sop -> row, plus the stored height and width
-
-  About 8 GB for the ~10,200 annotated SC slices. Check free space first:
-      df -h /sharedscratch/ps306
-
-USAGE
-  python precompute_sc.py --limit 5     # trial
-  python precompute_sc.py               # full run
-
-VERIFY
-  Per-patient pixel ranges are printed. SC renders are 8-bit colour, so values
-  should span roughly 0 to 255 with a non-trivial spread. An all-zero or
-  near-constant patient means the decode is wrong; stop rather than train on it.
-"""
 import os, sys, glob, argparse
 import numpy as np, pandas as pd
 
@@ -66,10 +41,6 @@ def detect_root(sample_rel):
 
 def read_rgb(path):
     """Return an (H, W, 3) uint8 array from a Secondary Capture DICOM.
-
-    pydicom applies PlanarConfiguration, so the result is colour-by-pixel
-    regardless of how the file stored it. Anything not already 8-bit RGB is
-    rejected rather than silently coerced.
     """
     ds = pydicom.dcmread(path, force=True)
     arr = ds.pixel_array
@@ -133,7 +104,7 @@ def main():
             failed.append((r.sop, f"{type(e).__name__}: {e}")); continue
 
         h, w = img.shape[:2]
-        if (h, w) != HW:                       # a handful are 484x484
+        if (h, w) != HW:                      
             canvas = np.zeros((*HW, 3), np.uint8)
             canvas[:min(h, HW[0]), :min(w, HW[1])] = img[:HW[0], :HW[1]]
             img = canvas
