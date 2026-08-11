@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH --job-name=yolofull
+#SBATCH --partition=gpu.L40S
+#SBATCH --account=compsci
+#SBATCH --qos=standrews
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=4-00:00:00
+#SBATCH --output=yolofull_%j.out
+
+cd /sharedscratch/ps306/lung
+/home/ps306/.conda/envs/lungtrain/bin/yolo detect train \
+    model=yolov8s.pt data=lung.yaml \
+    epochs=100 imgsz=512 batch=16 workers=8 patience=20 \
+    project=yolo_runs name=full exist_ok=True

@@ -1,0 +1,5 @@
+path: /sharedscratch/ps306/lung/yolo
+train: images/train
+val: images/val
+names:
+  0: tumour
