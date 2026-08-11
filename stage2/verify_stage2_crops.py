@@ -11,16 +11,16 @@ for k in range(6):
     box = json.loads(r.box)
     hu = load_hu_cached(r.sop)
 
-    # ---- Verification A: coordinate match, printed ----
+    #  Verification : coordinate match
     print(f"\nsample {k}: subtype={r.subtype}  sop=...{r.sop[-8:]}")
     print(f"  manifest box (drawn on overlay): {box}")
     print(f"  box within image bounds {hu.shape}: "
           f"{0 <= box[0] < box[2] <= hu.shape[1] and 0 <= box[1] < box[3] <= hu.shape[0]}")
 
-    # ---- Verification B: the actual crop the model receives ----
+    #  Verification : the actual crop the model receives
     crop = crop_box(hu, box)                                   # margin crop, no jitter (eval path)
     crop_img = (window_channels(crop) * 255).astype(np.uint8).transpose(1, 2, 0)
-    crop_pil = Image.fromarray(crop_img).resize((256, 256))    # what the model sees, upscaled to view
+    crop_pil = Image.fromarray(crop_img).resize((256, 256))    # what the model sees
     full = (window_channels(hu) * 255).astype(np.uint8).transpose(1, 2, 0)
     full_pil = Image.fromarray(full)
     # side-by-side: full slice (512) | crop (256), on one canvas
